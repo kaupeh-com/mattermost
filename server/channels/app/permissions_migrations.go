@@ -253,7 +253,7 @@ func (s *Server) doPermissionsMigration(key string, migrationMap permissionsMap,
 	return nil
 }
 
-func (a *App) getEmojisPermissionsSplitMigration() (permissionsMap, error) {
+func getEmojisPermissionsSplitMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     permissionExists(PermissionManageEmojis),
@@ -268,7 +268,7 @@ func (a *App) getEmojisPermissionsSplitMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getWebhooksPermissionsSplitMigration() (permissionsMap, error) {
+func getWebhooksPermissionsSplitMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     permissionExists(PermissionManageWebhooks),
@@ -283,7 +283,7 @@ func (a *App) getWebhooksPermissionsSplitMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getIntegrationsOwnPermissionsMigration() (permissionsMap, error) {
+func getIntegrationsOwnPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     permissionExists(PermissionManageIncomingWebhooks),
@@ -313,7 +313,7 @@ func (a *App) getIntegrationsOwnPermissionsMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getListJoinPublicPrivateTeamsPermissionsMigration() (permissionsMap, error) {
+func getListJoinPublicPrivateTeamsPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     isExactRole(model.SystemAdminRoleId),
@@ -328,7 +328,7 @@ func (a *App) getListJoinPublicPrivateTeamsPermissionsMigration() (permissionsMa
 	}, nil
 }
 
-func (a *App) removePermanentDeleteUserMigration() (permissionsMap, error) {
+func removePermanentDeleteUserMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     permissionExists(PermissionPermanentDeleteUser),
@@ -337,7 +337,7 @@ func (a *App) removePermanentDeleteUserMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddBotPermissionsMigration() (permissionsMap, error) {
+func getAddBotPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     isExactRole(model.SystemAdminRoleId),
@@ -347,7 +347,7 @@ func (a *App) getAddBotPermissionsMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) applyChannelManageDeleteToChannelUser() (permissionsMap, error) {
+func applyChannelManageDeleteToChannelUser() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  permissionAnd(isExactRole(model.ChannelUserRoleId), onOtherRole(model.TeamUserRoleId, permissionExists(PermissionManagePrivateChannelProperties))),
@@ -368,7 +368,7 @@ func (a *App) applyChannelManageDeleteToChannelUser() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) removeChannelManageDeleteFromTeamUser() (permissionsMap, error) {
+func removeChannelManageDeleteFromTeamUser() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:     permissionAnd(isExactRole(model.TeamUserRoleId), permissionExists(PermissionManagePrivateChannelProperties)),
@@ -389,7 +389,7 @@ func (a *App) removeChannelManageDeleteFromTeamUser() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getViewMembersPermissionMigration() (permissionsMap, error) {
+func getViewMembersPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SystemUserRoleId),
@@ -402,7 +402,7 @@ func (a *App) getViewMembersPermissionMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddManageGuestsPermissionsMigration() (permissionsMap, error) {
+func getAddManageGuestsPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SystemAdminRoleId),
@@ -523,7 +523,7 @@ func (a *App) channelModerationPermissionsMigration() (permissionsMap, error) {
 	return transformations, nil
 }
 
-func (a *App) getAddUseGroupMentionsPermissionMigration() (permissionsMap, error) {
+func getAddUseGroupMentionsPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionAnd(
@@ -536,7 +536,7 @@ func (a *App) getAddUseGroupMentionsPermissionMigration() (permissionsMap, error
 	}, nil
 }
 
-func (a *App) getAddSystemConsolePermissionsMigration() (permissionsMap, error) {
+func getAddSystemConsolePermissionsMigration() (permissionsMap, error) {
 	permissionsToAdd := []string{}
 	for _, permission := range append(model.SysconsoleReadPermissions, model.SysconsoleWritePermissions...) {
 		permissionsToAdd = append(permissionsToAdd, permission.Id)
@@ -576,7 +576,7 @@ func (a *App) getAddSystemConsolePermissionsMigration() (permissionsMap, error) 
 	}, nil
 }
 
-func (a *App) getAddConvertChannelPermissionsMigration() (permissionsMap, error) {
+func getAddConvertChannelPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  permissionExists(PermissionManageTeam),
@@ -585,7 +585,7 @@ func (a *App) getAddConvertChannelPermissionsMigration() (permissionsMap, error)
 	}, nil
 }
 
-func (a *App) getSystemRolesPermissionsMigration() (permissionsMap, error) {
+func getSystemRolesPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SystemAdminRoleId),
@@ -594,7 +594,7 @@ func (a *App) getSystemRolesPermissionsMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddManageSharedChannelsPermissionsMigration() (permissionsMap, error) {
+func getAddManageSharedChannelsPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SystemAdminRoleId),
@@ -603,7 +603,7 @@ func (a *App) getAddManageSharedChannelsPermissionsMigration() (permissionsMap, 
 	}, nil
 }
 
-func (a *App) getBillingPermissionsMigration() (permissionsMap, error) {
+func getBillingPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SystemAdminRoleId),
@@ -612,7 +612,7 @@ func (a *App) getBillingPermissionsMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddManageSecureConnectionsPermissionsMigration() (permissionsMap, error) {
+func getAddManageSecureConnectionsPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		// add the new permission to system admin
 		permissionTransformation{
@@ -627,7 +627,7 @@ func (a *App) getAddManageSecureConnectionsPermissionsMigration() (permissionsMa
 	}, nil
 }
 
-func (a *App) getAddDownloadComplianceExportResult() (permissionsMap, error) {
+func getAddDownloadComplianceExportResult() (permissionsMap, error) {
 	return permissionsMap{
 		// add the new permissions to system admin
 		permissionTransformation{
@@ -647,7 +647,7 @@ func (a *App) getAddDownloadComplianceExportResult() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddExperimentalSubsectionPermissions() (permissionsMap, error) {
+func getAddExperimentalSubsectionPermissions() (permissionsMap, error) {
 	return permissionsMap{
 		// Give the new subsection READ permissions to any user with READ_EXPERIMENTAL
 		permissionTransformation{
@@ -662,7 +662,7 @@ func (a *App) getAddExperimentalSubsectionPermissions() (permissionsMap, error) 
 	}, nil
 }
 
-func (a *App) getAddIntegrationsSubsectionPermissions() (permissionsMap, error) {
+func getAddIntegrationsSubsectionPermissions() (permissionsMap, error) {
 	permissionsIntegrationsRead := []string{model.PermissionSysconsoleReadIntegrationsIntegrationManagement.Id, model.PermissionSysconsoleReadIntegrationsBotAccounts.Id, model.PermissionSysconsoleReadIntegrationsGif.Id, model.PermissionSysconsoleReadIntegrationsCors.Id}
 	permissionsIntegrationsWrite := []string{model.PermissionSysconsoleWriteIntegrationsIntegrationManagement.Id, model.PermissionSysconsoleWriteIntegrationsBotAccounts.Id, model.PermissionSysconsoleWriteIntegrationsGif.Id, model.PermissionSysconsoleWriteIntegrationsCors.Id}
 
@@ -680,7 +680,7 @@ func (a *App) getAddIntegrationsSubsectionPermissions() (permissionsMap, error) 
 	}, nil
 }
 
-func (a *App) getAddSiteSubsectionPermissions() (permissionsMap, error) {
+func getAddSiteSubsectionPermissions() (permissionsMap, error) {
 	permissionsSiteRead := []string{model.PermissionSysconsoleReadSiteCustomization.Id, model.PermissionSysconsoleReadSiteLocalization.Id, model.PermissionSysconsoleReadSiteUsersAndTeams.Id, model.PermissionSysconsoleReadSiteNotifications.Id, model.PermissionSysconsoleReadSiteAnnouncementBanner.Id, model.PermissionSysconsoleReadSiteEmoji.Id, model.PermissionSysconsoleReadSitePosts.Id, model.PermissionSysconsoleReadSiteFileSharingAndDownloads.Id, model.PermissionSysconsoleReadSitePublicLinks.Id, model.PermissionSysconsoleReadSiteNotices.Id}
 	permissionsSiteWrite := []string{model.PermissionSysconsoleWriteSiteCustomization.Id, model.PermissionSysconsoleWriteSiteLocalization.Id, model.PermissionSysconsoleWriteSiteUsersAndTeams.Id, model.PermissionSysconsoleWriteSiteNotifications.Id, model.PermissionSysconsoleWriteSiteAnnouncementBanner.Id, model.PermissionSysconsoleWriteSiteEmoji.Id, model.PermissionSysconsoleWriteSitePosts.Id, model.PermissionSysconsoleWriteSiteFileSharingAndDownloads.Id, model.PermissionSysconsoleWriteSitePublicLinks.Id, model.PermissionSysconsoleWriteSiteNotices.Id}
 
@@ -703,7 +703,7 @@ func (a *App) getAddSiteSubsectionPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddComplianceSubsectionPermissions() (permissionsMap, error) {
+func getAddComplianceSubsectionPermissions() (permissionsMap, error) {
 	permissionsComplianceRead := []string{model.PermissionSysconsoleReadComplianceDataRetentionPolicy.Id, model.PermissionSysconsoleReadComplianceComplianceExport.Id, model.PermissionSysconsoleReadComplianceComplianceMonitoring.Id, model.PermissionSysconsoleReadComplianceCustomTermsOfService.Id}
 	permissionsComplianceWrite := []string{model.PermissionSysconsoleWriteComplianceDataRetentionPolicy.Id, model.PermissionSysconsoleWriteComplianceComplianceExport.Id, model.PermissionSysconsoleWriteComplianceComplianceMonitoring.Id, model.PermissionSysconsoleWriteComplianceCustomTermsOfService.Id}
 
@@ -742,7 +742,7 @@ func (a *App) getAddComplianceSubsectionPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddEnvironmentSubsectionPermissions() (permissionsMap, error) {
+func getAddEnvironmentSubsectionPermissions() (permissionsMap, error) {
 	permissionsEnvironmentRead := []string{
 		model.PermissionSysconsoleReadEnvironmentWebServer.Id,
 		model.PermissionSysconsoleReadEnvironmentDatabase.Id,
@@ -831,7 +831,7 @@ func (a *App) getAddEnvironmentSubsectionPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddAboutSubsectionPermissions() (permissionsMap, error) {
+func getAddAboutSubsectionPermissions() (permissionsMap, error) {
 	permissionsAboutRead := []string{model.PermissionSysconsoleReadAboutEditionAndLicense.Id}
 	permissionsAboutWrite := []string{model.PermissionSysconsoleWriteAboutEditionAndLicense.Id}
 
@@ -855,7 +855,7 @@ func (a *App) getAddAboutSubsectionPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddReportingSubsectionPermissions() (permissionsMap, error) {
+func getAddReportingSubsectionPermissions() (permissionsMap, error) {
 	permissionsReportingRead := []string{
 		model.PermissionSysconsoleReadReportingSiteStatistics.Id,
 		model.PermissionSysconsoleReadReportingTeamStatistics.Id,
@@ -892,7 +892,7 @@ func (a *App) getAddReportingSubsectionPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error) {
+func getAddAuthenticationSubsectionPermissions() (permissionsMap, error) {
 	permissionsAuthenticationRead := []string{model.PermissionSysconsoleReadAuthenticationSignup.Id, model.PermissionSysconsoleReadAuthenticationEmail.Id, model.PermissionSysconsoleReadAuthenticationPassword.Id, model.PermissionSysconsoleReadAuthenticationMfa.Id, model.PermissionSysconsoleReadAuthenticationLdap.Id, model.PermissionSysconsoleReadAuthenticationSaml.Id, model.PermissionSysconsoleReadAuthenticationOpenid.Id, model.PermissionSysconsoleReadAuthenticationGuestAccess.Id}
 	permissionsAuthenticationWrite := []string{model.PermissionSysconsoleWriteAuthenticationSignup.Id, model.PermissionSysconsoleWriteAuthenticationEmail.Id, model.PermissionSysconsoleWriteAuthenticationPassword.Id, model.PermissionSysconsoleWriteAuthenticationMfa.Id, model.PermissionSysconsoleWriteAuthenticationLdap.Id, model.PermissionSysconsoleWriteAuthenticationSaml.Id, model.PermissionSysconsoleWriteAuthenticationOpenid.Id, model.PermissionSysconsoleWriteAuthenticationGuestAccess.Id}
 
@@ -931,7 +931,7 @@ func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error
 }
 
 // This migration fixes https://github.com/mattermost/mattermost-server/issues/17642 where this particular ancillary permission was forgotten during the initial migrations
-func (a *App) getAddTestEmailAncillaryPermission() (permissionsMap, error) {
+func getAddTestEmailAncillaryPermission() (permissionsMap, error) {
 	return permissionsMap{
 		// Give these ancillary permissions to anyone with WRITE_ENVIRONMENT_SMTP
 		permissionTransformation{
@@ -941,7 +941,7 @@ func (a *App) getAddTestEmailAncillaryPermission() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddCustomUserGroupsPermissions() (permissionsMap, error) {
+func getAddCustomUserGroupsPermissions() (permissionsMap, error) {
 	customGroupPermissions := []string{
 		model.PermissionCreateCustomGroup.Id,
 		model.PermissionManageCustomGroupMembers.Id,
@@ -961,7 +961,7 @@ func (a *App) getAddCustomUserGroupsPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddCustomUserGroupsPermissionRestore() (permissionsMap, error) {
+func getAddCustomUserGroupsPermissionRestore() (permissionsMap, error) {
 	customGroupPermissions := []string{
 		model.PermissionRestoreCustomGroup.Id,
 	}
@@ -982,7 +982,7 @@ func (a *App) getAddCustomUserGroupsPermissionRestore() (permissionsMap, error) 
 	}, nil
 }
 
-func (a *App) getAddPlaybooksPermissions() (permissionsMap, error) {
+func getAddPlaybooksPermissions() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(
@@ -1014,7 +1014,7 @@ func (a *App) getAddPlaybooksPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getPlaybooksPermissionsAddManageRoles() (permissionsMap, error) {
+func getPlaybooksPermissionsAddManageRoles() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(
@@ -1030,7 +1030,7 @@ func (a *App) getPlaybooksPermissionsAddManageRoles() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getProductsBoardsPermissions() (permissionsMap, error) {
+func getProductsBoardsPermissions() (permissionsMap, error) {
 	return permissionsMap{
 		// Give the new subsection READ permissions to any user with SYSTEM_MANAGER
 		permissionTransformation{
@@ -1046,7 +1046,7 @@ func (a *App) getProductsBoardsPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddChannelReadContentPermissions() (permissionsMap, error) {
+func getAddChannelReadContentPermissions() (permissionsMap, error) {
 	return permissionsMap{
 		// Migrate all roles including custom roles that have the read_channel permission
 		// but exclude system console roles system_read_only_admin system_user_manager & system_manager
@@ -1067,7 +1067,7 @@ func (a *App) getAddChannelReadContentPermissions() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddIPFilterPermissionsMigration() (permissionsMap, error) {
+func getAddIPFilterPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(isExactRole(model.SystemAdminRoleId)),
@@ -1085,7 +1085,7 @@ func (a *App) getAddIPFilterPermissionsMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddOutgoingOAuthConnectionsPermissions() (permissionsMap, error) {
+func getAddOutgoingOAuthConnectionsPermissions() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(isExactRole(model.SystemAdminRoleId)),
@@ -1096,7 +1096,7 @@ func (a *App) getAddOutgoingOAuthConnectionsPermissions() (permissionsMap, error
 	}, nil
 }
 
-func (a *App) getAddChannelBookmarksPermissionsMigration() (permissionsMap, error) {
+func getAddChannelBookmarksPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(
@@ -1119,7 +1119,7 @@ func (a *App) getAddChannelBookmarksPermissionsMigration() (permissionsMap, erro
 	}, nil
 }
 
-func (a *App) getAddManageJobAncillaryPermissionsMigration() (permissionsMap, error) {
+func getAddManageJobAncillaryPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  permissionExists(model.PermissionSysconsoleWriteAuthenticationLdap.Id),
@@ -1144,7 +1144,7 @@ func (a *App) getAddManageJobAncillaryPermissionsMigration() (permissionsMap, er
 	}, nil
 }
 
-func (a *App) getAddUploadFilePermissionMigration() (permissionsMap, error) {
+func getAddUploadFilePermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  permissionExists(model.PermissionCreatePost.Id),
@@ -1153,7 +1153,7 @@ func (a *App) getAddUploadFilePermissionMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getFixReadAuditsPermissionMigration() (permissionsMap, error) {
+func getFixReadAuditsPermissionMigration() (permissionsMap, error) {
 	transformations := []permissionTransformation{}
 
 	transformations = append(transformations, permissionTransformation{
@@ -1168,7 +1168,7 @@ func (a *App) getFixReadAuditsPermissionMigration() (permissionsMap, error) {
 	return transformations, nil
 }
 
-func (a *App) removeGetAnalyticsPermissionMigration() (permissionsMap, error) {
+func removeGetAnalyticsPermissionMigration() (permissionsMap, error) {
 	transformations := []permissionTransformation{}
 
 	transformations = append(transformations, permissionTransformation{
@@ -1183,7 +1183,7 @@ func (a *App) removeGetAnalyticsPermissionMigration() (permissionsMap, error) {
 	return transformations, nil
 }
 
-func (a *App) addSysConsoleMobileSecurityPermission() (permissionsMap, error) {
+func addSysConsoleMobileSecurityPermission() (permissionsMap, error) {
 	transformations := []permissionTransformation{}
 
 	transformations = append(transformations, permissionTransformation{
@@ -1202,7 +1202,7 @@ func (a *App) addSysConsoleMobileSecurityPermission() (permissionsMap, error) {
 	return transformations, nil
 }
 
-func (a *App) getAddChannelBannerPermissionMigration() (permissionsMap, error) {
+func getAddChannelBannerPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(
@@ -1218,7 +1218,7 @@ func (a *App) getAddChannelBannerPermissionMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) getAddChannelAccessRulesPermissionMigration() (permissionsMap, error) {
+func getAddChannelAccessRulesPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(
@@ -1233,7 +1233,7 @@ func (a *App) getAddChannelAccessRulesPermissionMigration() (permissionsMap, err
 	}, nil
 }
 
-func (a *App) getAddChannelAutoTranslationPermissionMigration() (permissionsMap, error) {
+func getAddChannelAutoTranslationPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On: permissionOr(
@@ -1250,7 +1250,7 @@ func (a *App) getAddChannelAutoTranslationPermissionMigration() (permissionsMap,
 }
 
 // Only sysadmins, team admins, and users with channels and groups managements have access to "convert channel to public"
-func (a *App) getRestrictAcessToChannelConversionToPublic() (permissionsMap, error) {
+func getRestrictAcessToChannelConversionToPublic() (permissionsMap, error) {
 	return []permissionTransformation{
 		{
 			On: permissionAnd(
@@ -1266,7 +1266,7 @@ func (a *App) getRestrictAcessToChannelConversionToPublic() (permissionsMap, err
 	}, nil
 }
 
-func (a *App) getAddSharedChannelManagerPermissionsMigration() (permissionsMap, error) {
+func getAddSharedChannelManagerPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SharedChannelManagerRoleId),
@@ -1275,7 +1275,7 @@ func (a *App) getAddSharedChannelManagerPermissionsMigration() (permissionsMap, 
 	}, nil
 }
 
-func (a *App) getAddSecureConnectionManagerPermissionsMigration() (permissionsMap, error) {
+func getAddSecureConnectionManagerPermissionsMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SecureConnectionManagerRoleId),
@@ -1284,7 +1284,7 @@ func (a *App) getAddSecureConnectionManagerPermissionsMigration() (permissionsMa
 	}, nil
 }
 
-func (a *App) getRestoreManageOAuthPermissionMigration() (permissionsMap, error) {
+func getRestoreManageOAuthPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
 		permissionTransformation{
 			On:  isExactRole(model.SystemAdminRoleId),
@@ -1304,55 +1304,55 @@ func (s *Server) doPermissionsMigrations() error {
 		Key       string
 		Migration func() (permissionsMap, error)
 	}{
-		{Key: model.MigrationKeyEmojiPermissionsSplit, Migration: a.getEmojisPermissionsSplitMigration},
-		{Key: model.MigrationKeyWebhookPermissionsSplit, Migration: a.getWebhooksPermissionsSplitMigration},
-		{Key: model.MigrationKeyIntegrationsOwnPermissions, Migration: a.getIntegrationsOwnPermissionsMigration},
-		{Key: model.MigrationKeyListJoinPublicPrivateTeams, Migration: a.getListJoinPublicPrivateTeamsPermissionsMigration},
-		{Key: model.MigrationKeyRemovePermanentDeleteUser, Migration: a.removePermanentDeleteUserMigration},
-		{Key: model.MigrationKeyAddBotPermissions, Migration: a.getAddBotPermissionsMigration},
-		{Key: model.MigrationKeyApplyChannelManageDeleteToChannelUser, Migration: a.applyChannelManageDeleteToChannelUser},
-		{Key: model.MigrationKeyRemoveChannelManageDeleteFromTeamUser, Migration: a.removeChannelManageDeleteFromTeamUser},
-		{Key: model.MigrationKeyViewMembersNewPermission, Migration: a.getViewMembersPermissionMigration},
-		{Key: model.MigrationKeyAddManageGuestsPermissions, Migration: a.getAddManageGuestsPermissionsMigration},
+		{Key: model.MigrationKeyEmojiPermissionsSplit, Migration: getEmojisPermissionsSplitMigration},
+		{Key: model.MigrationKeyWebhookPermissionsSplit, Migration: getWebhooksPermissionsSplitMigration},
+		{Key: model.MigrationKeyIntegrationsOwnPermissions, Migration: getIntegrationsOwnPermissionsMigration},
+		{Key: model.MigrationKeyListJoinPublicPrivateTeams, Migration: getListJoinPublicPrivateTeamsPermissionsMigration},
+		{Key: model.MigrationKeyRemovePermanentDeleteUser, Migration: removePermanentDeleteUserMigration},
+		{Key: model.MigrationKeyAddBotPermissions, Migration: getAddBotPermissionsMigration},
+		{Key: model.MigrationKeyApplyChannelManageDeleteToChannelUser, Migration: applyChannelManageDeleteToChannelUser},
+		{Key: model.MigrationKeyRemoveChannelManageDeleteFromTeamUser, Migration: removeChannelManageDeleteFromTeamUser},
+		{Key: model.MigrationKeyViewMembersNewPermission, Migration: getViewMembersPermissionMigration},
+		{Key: model.MigrationKeyAddManageGuestsPermissions, Migration: getAddManageGuestsPermissionsMigration},
 		{Key: model.MigrationKeyChannelModerationsPermissions, Migration: a.channelModerationPermissionsMigration},
-		{Key: model.MigrationKeyAddUseGroupMentionsPermission, Migration: a.getAddUseGroupMentionsPermissionMigration},
-		{Key: model.MigrationKeyAddSystemConsolePermissions, Migration: a.getAddSystemConsolePermissionsMigration},
-		{Key: model.MigrationKeyAddConvertChannelPermissions, Migration: a.getAddConvertChannelPermissionsMigration},
-		{Key: model.MigrationKeyAddManageSharedChannelPermissions, Migration: a.getAddManageSharedChannelsPermissionsMigration},
-		{Key: model.MigrationKeyAddManageSecureConnectionsPermissions, Migration: a.getAddManageSecureConnectionsPermissionsMigration},
-		{Key: model.MigrationKeyAddSystemRolesPermissions, Migration: a.getSystemRolesPermissionsMigration},
-		{Key: model.MigrationKeyAddBillingPermissions, Migration: a.getBillingPermissionsMigration},
-		{Key: model.MigrationKeyAddDownloadComplianceExportResults, Migration: a.getAddDownloadComplianceExportResult},
-		{Key: model.MigrationKeyAddExperimentalSubsectionPermissions, Migration: a.getAddExperimentalSubsectionPermissions},
-		{Key: model.MigrationKeyAddAuthenticationSubsectionPermissions, Migration: a.getAddAuthenticationSubsectionPermissions},
-		{Key: model.MigrationKeyAddIntegrationsSubsectionPermissions, Migration: a.getAddIntegrationsSubsectionPermissions},
-		{Key: model.MigrationKeyAddSiteSubsectionPermissions, Migration: a.getAddSiteSubsectionPermissions},
-		{Key: model.MigrationKeyAddComplianceSubsectionPermissions, Migration: a.getAddComplianceSubsectionPermissions},
-		{Key: model.MigrationKeyAddEnvironmentSubsectionPermissions, Migration: a.getAddEnvironmentSubsectionPermissions},
-		{Key: model.MigrationKeyAddAboutSubsectionPermissions, Migration: a.getAddAboutSubsectionPermissions},
-		{Key: model.MigrationKeyAddReportingSubsectionPermissions, Migration: a.getAddReportingSubsectionPermissions},
-		{Key: model.MigrationKeyAddTestEmailAncillaryPermission, Migration: a.getAddTestEmailAncillaryPermission},
-		{Key: model.MigrationKeyAddPlaybooksPermissions, Migration: a.getAddPlaybooksPermissions},
-		{Key: model.MigrationKeyAddCustomUserGroupsPermissions, Migration: a.getAddCustomUserGroupsPermissions},
-		{Key: model.MigrationKeyAddPlayboosksManageRolesPermissions, Migration: a.getPlaybooksPermissionsAddManageRoles},
-		{Key: model.MigrationKeyAddProductsBoardsPermissions, Migration: a.getProductsBoardsPermissions},
-		{Key: model.MigrationKeyAddCustomUserGroupsPermissionRestore, Migration: a.getAddCustomUserGroupsPermissionRestore},
-		{Key: model.MigrationKeyAddReadChannelContentPermissions, Migration: a.getAddChannelReadContentPermissions},
-		{Key: model.MigrationKeyAddIPFilteringPermissions, Migration: a.getAddIPFilterPermissionsMigration},
-		{Key: model.MigrationKeyAddOutgoingOAuthConnectionsPermissions, Migration: a.getAddOutgoingOAuthConnectionsPermissions},
-		{Key: model.MigrationKeyAddChannelBookmarksPermissions, Migration: a.getAddChannelBookmarksPermissionsMigration},
-		{Key: model.MigrationKeyAddManageJobAncillaryPermissions, Migration: a.getAddManageJobAncillaryPermissionsMigration},
-		{Key: model.MigrationKeyAddUploadFilePermission, Migration: a.getAddUploadFilePermissionMigration},
-		{Key: model.RestrictAccessToChannelConversionToPublic, Migration: a.getRestrictAcessToChannelConversionToPublic},
-		{Key: model.MigrationKeyFixReadAuditsPermission, Migration: a.getFixReadAuditsPermissionMigration},
-		{Key: model.MigrationRemoveGetAnalyticsPermission, Migration: a.removeGetAnalyticsPermissionMigration},
-		{Key: model.MigrationAddSysconsoleMobileSecurityPermission, Migration: a.addSysConsoleMobileSecurityPermission},
-		{Key: model.MigrationKeyAddChannelBannerPermissions, Migration: a.getAddChannelBannerPermissionMigration},
-		{Key: model.MigrationKeyAddChannelAccessRulesPermission, Migration: a.getAddChannelAccessRulesPermissionMigration},
-		{Key: model.MigrationKeyAddChannelAutoTranslationPermissions, Migration: a.getAddChannelAutoTranslationPermissionMigration},
-		{Key: model.MigrationKeyAddSharedChannelManagerPermissions, Migration: a.getAddSharedChannelManagerPermissionsMigration},
-		{Key: model.MigrationKeyAddSecureConnectionManagerPermissions, Migration: a.getAddSecureConnectionManagerPermissionsMigration},
-		{Key: model.MigrationKeyRestoreManageOAuthPermission, Migration: a.getRestoreManageOAuthPermissionMigration},
+		{Key: model.MigrationKeyAddUseGroupMentionsPermission, Migration: getAddUseGroupMentionsPermissionMigration},
+		{Key: model.MigrationKeyAddSystemConsolePermissions, Migration: getAddSystemConsolePermissionsMigration},
+		{Key: model.MigrationKeyAddConvertChannelPermissions, Migration: getAddConvertChannelPermissionsMigration},
+		{Key: model.MigrationKeyAddManageSharedChannelPermissions, Migration: getAddManageSharedChannelsPermissionsMigration},
+		{Key: model.MigrationKeyAddManageSecureConnectionsPermissions, Migration: getAddManageSecureConnectionsPermissionsMigration},
+		{Key: model.MigrationKeyAddSystemRolesPermissions, Migration: getSystemRolesPermissionsMigration},
+		{Key: model.MigrationKeyAddBillingPermissions, Migration: getBillingPermissionsMigration},
+		{Key: model.MigrationKeyAddDownloadComplianceExportResults, Migration: getAddDownloadComplianceExportResult},
+		{Key: model.MigrationKeyAddExperimentalSubsectionPermissions, Migration: getAddExperimentalSubsectionPermissions},
+		{Key: model.MigrationKeyAddAuthenticationSubsectionPermissions, Migration: getAddAuthenticationSubsectionPermissions},
+		{Key: model.MigrationKeyAddIntegrationsSubsectionPermissions, Migration: getAddIntegrationsSubsectionPermissions},
+		{Key: model.MigrationKeyAddSiteSubsectionPermissions, Migration: getAddSiteSubsectionPermissions},
+		{Key: model.MigrationKeyAddComplianceSubsectionPermissions, Migration: getAddComplianceSubsectionPermissions},
+		{Key: model.MigrationKeyAddEnvironmentSubsectionPermissions, Migration: getAddEnvironmentSubsectionPermissions},
+		{Key: model.MigrationKeyAddAboutSubsectionPermissions, Migration: getAddAboutSubsectionPermissions},
+		{Key: model.MigrationKeyAddReportingSubsectionPermissions, Migration: getAddReportingSubsectionPermissions},
+		{Key: model.MigrationKeyAddTestEmailAncillaryPermission, Migration: getAddTestEmailAncillaryPermission},
+		{Key: model.MigrationKeyAddPlaybooksPermissions, Migration: getAddPlaybooksPermissions},
+		{Key: model.MigrationKeyAddCustomUserGroupsPermissions, Migration: getAddCustomUserGroupsPermissions},
+		{Key: model.MigrationKeyAddPlayboosksManageRolesPermissions, Migration: getPlaybooksPermissionsAddManageRoles},
+		{Key: model.MigrationKeyAddProductsBoardsPermissions, Migration: getProductsBoardsPermissions},
+		{Key: model.MigrationKeyAddCustomUserGroupsPermissionRestore, Migration: getAddCustomUserGroupsPermissionRestore},
+		{Key: model.MigrationKeyAddReadChannelContentPermissions, Migration: getAddChannelReadContentPermissions},
+		{Key: model.MigrationKeyAddIPFilteringPermissions, Migration: getAddIPFilterPermissionsMigration},
+		{Key: model.MigrationKeyAddOutgoingOAuthConnectionsPermissions, Migration: getAddOutgoingOAuthConnectionsPermissions},
+		{Key: model.MigrationKeyAddChannelBookmarksPermissions, Migration: getAddChannelBookmarksPermissionsMigration},
+		{Key: model.MigrationKeyAddManageJobAncillaryPermissions, Migration: getAddManageJobAncillaryPermissionsMigration},
+		{Key: model.MigrationKeyAddUploadFilePermission, Migration: getAddUploadFilePermissionMigration},
+		{Key: model.RestrictAccessToChannelConversionToPublic, Migration: getRestrictAcessToChannelConversionToPublic},
+		{Key: model.MigrationKeyFixReadAuditsPermission, Migration: getFixReadAuditsPermissionMigration},
+		{Key: model.MigrationRemoveGetAnalyticsPermission, Migration: removeGetAnalyticsPermissionMigration},
+		{Key: model.MigrationAddSysconsoleMobileSecurityPermission, Migration: addSysConsoleMobileSecurityPermission},
+		{Key: model.MigrationKeyAddChannelBannerPermissions, Migration: getAddChannelBannerPermissionMigration},
+		{Key: model.MigrationKeyAddChannelAccessRulesPermission, Migration: getAddChannelAccessRulesPermissionMigration},
+		{Key: model.MigrationKeyAddChannelAutoTranslationPermissions, Migration: getAddChannelAutoTranslationPermissionMigration},
+		{Key: model.MigrationKeyAddSharedChannelManagerPermissions, Migration: getAddSharedChannelManagerPermissionsMigration},
+		{Key: model.MigrationKeyAddSecureConnectionManagerPermissions, Migration: getAddSecureConnectionManagerPermissionsMigration},
+		{Key: model.MigrationKeyRestoreManageOAuthPermission, Migration: getRestoreManageOAuthPermissionMigration},
 	}
 
 	roles, err := s.Store().Role().GetAll()

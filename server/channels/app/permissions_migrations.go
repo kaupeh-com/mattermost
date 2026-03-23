@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+//go:generate go run ./generator/generate_default_roles_permissions.go
+
 package app
 
 import (
@@ -411,15 +413,8 @@ func getAddManageGuestsPermissionsMigration() (permissionsMap, error) {
 	}, nil
 }
 
-func (a *App) channelModerationPermissionsMigration() (permissionsMap, error) {
+func channelModerationPermissionsTransformations(allTeamSchemes []*model.Scheme) permissionsMap {
 	transformations := permissionsMap{}
-
-	var allTeamSchemes []*model.Scheme
-	next := a.SchemesIterator(model.SchemeScopeTeam, 100)
-	var schemeBatch []*model.Scheme
-	for schemeBatch = next(); len(schemeBatch) > 0; schemeBatch = next() {
-		allTeamSchemes = append(allTeamSchemes, schemeBatch...)
-	}
 
 	moderatedPermissionsMinusCreatePost := []string{
 		PermissionAddReaction,
@@ -520,7 +515,17 @@ func (a *App) channelModerationPermissionsMigration() (permissionsMap, error) {
 		Add: []string{PermissionUseChannelMentions},
 	})
 
-	return transformations, nil
+	return transformations
+}
+
+func (a *App) channelModerationPermissionsMigration() (permissionsMap, error) {
+	var allTeamSchemes []*model.Scheme
+	next := a.SchemesIterator(model.SchemeScopeTeam, 100)
+	var schemeBatch []*model.Scheme
+	for schemeBatch = next(); len(schemeBatch) > 0; schemeBatch = next() {
+		allTeamSchemes = append(allTeamSchemes, schemeBatch...)
+	}
+	return channelModerationPermissionsTransformations(allTeamSchemes), nil
 }
 
 func getAddUseGroupMentionsPermissionMigration() (permissionsMap, error) {
@@ -1293,17 +1298,16 @@ func getRestoreManageOAuthPermissionMigration() (permissionsMap, error) {
 	}, nil
 }
 
-// DoPermissionsMigrations execute all the permissions migrations need by the current version.
-func (a *App) DoPermissionsMigrations() error {
-	return a.Srv().doPermissionsMigrations()
+type migrationEntry struct {
+	Key       string
+	Migration func() (permissionsMap, error)
 }
 
-func (s *Server) doPermissionsMigrations() error {
-	a := New(ServerConnector(s.Channels()))
-	PermissionsMigrations := []struct {
-		Key       string
-		Migration func() (permissionsMap, error)
-	}{
+// getPermissionsMigrationEntries returns the ordered list of permission migrations.
+// channelModerationMig is passed separately because it is the only migration that
+// requires a live database (to iterate team schemes); the others are purely static.
+func getPermissionsMigrationEntries(channelModerationMig func() (permissionsMap, error)) []migrationEntry {
+	return []migrationEntry{
 		{Key: model.MigrationKeyEmojiPermissionsSplit, Migration: getEmojisPermissionsSplitMigration},
 		{Key: model.MigrationKeyWebhookPermissionsSplit, Migration: getWebhooksPermissionsSplitMigration},
 		{Key: model.MigrationKeyIntegrationsOwnPermissions, Migration: getIntegrationsOwnPermissionsMigration},
@@ -1314,7 +1318,7 @@ func (s *Server) doPermissionsMigrations() error {
 		{Key: model.MigrationKeyRemoveChannelManageDeleteFromTeamUser, Migration: removeChannelManageDeleteFromTeamUser},
 		{Key: model.MigrationKeyViewMembersNewPermission, Migration: getViewMembersPermissionMigration},
 		{Key: model.MigrationKeyAddManageGuestsPermissions, Migration: getAddManageGuestsPermissionsMigration},
-		{Key: model.MigrationKeyChannelModerationsPermissions, Migration: a.channelModerationPermissionsMigration},
+		{Key: model.MigrationKeyChannelModerationsPermissions, Migration: channelModerationMig},
 		{Key: model.MigrationKeyAddUseGroupMentionsPermission, Migration: getAddUseGroupMentionsPermissionMigration},
 		{Key: model.MigrationKeyAddSystemConsolePermissions, Migration: getAddSystemConsolePermissionsMigration},
 		{Key: model.MigrationKeyAddConvertChannelPermissions, Migration: getAddConvertChannelPermissionsMigration},
@@ -1354,13 +1358,23 @@ func (s *Server) doPermissionsMigrations() error {
 		{Key: model.MigrationKeyAddSecureConnectionManagerPermissions, Migration: getAddSecureConnectionManagerPermissionsMigration},
 		{Key: model.MigrationKeyRestoreManageOAuthPermission, Migration: getRestoreManageOAuthPermissionMigration},
 	}
+}
+
+// DoPermissionsMigrations executes all the permissions migrations needed by the current version.
+func (a *App) DoPermissionsMigrations() error {
+	return a.Srv().doPermissionsMigrations()
+}
+
+func (s *Server) doPermissionsMigrations() error {
+	a := New(ServerConnector(s.Channels()))
+	migrations := getPermissionsMigrationEntries(a.channelModerationPermissionsMigration)
 
 	roles, err := s.Store().Role().GetAll()
 	if err != nil {
 		return err
 	}
 
-	for _, migration := range PermissionsMigrations {
+	for _, migration := range migrations {
 		migMap, err := migration.Migration()
 		if err != nil {
 			return err

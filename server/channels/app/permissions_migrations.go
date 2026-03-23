@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-//go:generate go run ./generator/generate_default_roles_permissions.go
+//go:generate go run ./generator/generate_default_roles_permissions.go -out ../../../webapp/platform/types/src/default_roles_permissions.js
 
 package app
 

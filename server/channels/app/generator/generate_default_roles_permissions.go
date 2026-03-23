@@ -4,10 +4,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
-	"runtime"
 	"slices"
 	"sort"
 	"strings"
@@ -34,6 +33,13 @@ export const defaultRolesPermissions = {
 `))
 
 func main() {
+	outPath := flag.String("out", "", "output file path")
+	flag.Parse()
+	if *outPath == "" {
+		fmt.Fprintln(os.Stderr, "usage: generate_default_roles_permissions -out <path>")
+		os.Exit(1)
+	}
+
 	roles := model.MakeDefaultRoles()
 
 	roleNames := make([]string, 0, len(roles))
@@ -60,14 +66,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, thisFile, _, _ := runtime.Caller(0)
-	// This writes to: ../../../../webapp/platform/types/src/default_roles_permissions.js
-	outPath := filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", "webapp", "platform", "types", "src", "default_roles_permissions.js")
-
-	if err := os.WriteFile(outPath, []byte(b.String()), 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "error writing %s: %v\n", outPath, err)
+	if err := os.WriteFile(*outPath, []byte(b.String()), 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "error writing %s: %v\n", *outPath, err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Generated %s\n", outPath)
+	fmt.Printf("Generated %s\n", *outPath)
 }

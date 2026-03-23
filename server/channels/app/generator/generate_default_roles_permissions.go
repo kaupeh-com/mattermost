@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"text/template"
@@ -46,6 +47,7 @@ func main() {
 		perms := make([]string, len(roles[name].Permissions))
 		copy(perms, roles[name].Permissions)
 		sort.Strings(perms)
+		perms = slices.Compact(perms)
 		entries = append(entries, roleEntry{
 			Name:        name,
 			Permissions: strings.Join(perms, " "),

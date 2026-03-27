@@ -2168,6 +2168,7 @@ func TestSearchPostsForUser(t *testing.T) {
 		es.On("SearchPosts", mock.Anything, mock.Anything, page, perPage).Return(resultsPage, nil, nil)
 		es.On("Start").Return(nil).Maybe()
 		es.On("IsActive").Return(true)
+		es.On("IsHealthy").Return(true)
 		es.On("IsSearchEnabled").Return(true)
 		th.App.Srv().Platform().SearchEngine.ElasticsearchEngine = es
 		defer func() {
@@ -2196,6 +2197,7 @@ func TestSearchPostsForUser(t *testing.T) {
 		es.On("SearchPosts", mock.Anything, mock.Anything, page, perPage).Return(resultsPage, nil, nil)
 		es.On("Start").Return(nil).Maybe()
 		es.On("IsActive").Return(true)
+		es.On("IsHealthy").Return(true)
 		es.On("IsSearchEnabled").Return(true)
 		th.App.Srv().Platform().SearchEngine.ElasticsearchEngine = es
 		defer func() {
@@ -2221,6 +2223,7 @@ func TestSearchPostsForUser(t *testing.T) {
 		es.On("GetName").Return("mock")
 		es.On("Start").Return(nil).Maybe()
 		es.On("IsActive").Return(true)
+		es.On("IsHealthy").Return(true)
 		es.On("IsSearchEnabled").Return(true)
 		th.App.Srv().Platform().SearchEngine.ElasticsearchEngine = es
 		defer func() {
@@ -2254,6 +2257,7 @@ func TestSearchPostsForUser(t *testing.T) {
 		es.On("GetName").Return("mock")
 		es.On("Start").Return(nil).Maybe()
 		es.On("IsActive").Return(true)
+		es.On("IsHealthy").Return(true)
 		es.On("IsSearchEnabled").Return(true)
 		th.App.Srv().Platform().SearchEngine.ElasticsearchEngine = es
 		defer func() {

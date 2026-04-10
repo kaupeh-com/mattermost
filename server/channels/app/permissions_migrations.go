@@ -518,14 +518,10 @@ func channelModerationPermissionsTransformations(allTeamSchemes []*model.Scheme)
 	return transformations
 }
 
-func (a *App) channelModerationPermissionsMigration() (permissionsMap, error) {
-	var allTeamSchemes []*model.Scheme
-	next := a.SchemesIterator(model.SchemeScopeTeam, 100)
-	var schemeBatch []*model.Scheme
-	for schemeBatch = next(); len(schemeBatch) > 0; schemeBatch = next() {
-		allTeamSchemes = append(allTeamSchemes, schemeBatch...)
+func channelModerationPermissionsMigration(getAllTeamSchemes func() []*model.Scheme) func() (permissionsMap, error) {
+	return func() (permissionsMap, error) {
+		return channelModerationPermissionsTransformations(getAllTeamSchemes()), nil
 	}
-	return channelModerationPermissionsTransformations(allTeamSchemes), nil
 }
 
 func getAddUseGroupMentionsPermissionMigration() (permissionsMap, error) {
@@ -1304,9 +1300,9 @@ type migrationEntry struct {
 }
 
 // getPermissionsMigrationEntries returns the ordered list of permission migrations.
-// channelModerationMig is passed separately because it is the only migration that
-// requires a live database (to iterate team schemes); the others are purely static.
-func getPermissionsMigrationEntries(channelModerationMig func() (permissionsMap, error)) []migrationEntry {
+// getAllTeamSchemes is passed in for migrations that need to query team schemes from
+// the database; all other migrations are purely static.
+func getPermissionsMigrationEntries(getAllTeamSchemes func() []*model.Scheme) []migrationEntry {
 	return []migrationEntry{
 		{Key: model.MigrationKeyEmojiPermissionsSplit, Migration: getEmojisPermissionsSplitMigration},
 		{Key: model.MigrationKeyWebhookPermissionsSplit, Migration: getWebhooksPermissionsSplitMigration},
@@ -1318,7 +1314,7 @@ func getPermissionsMigrationEntries(channelModerationMig func() (permissionsMap,
 		{Key: model.MigrationKeyRemoveChannelManageDeleteFromTeamUser, Migration: removeChannelManageDeleteFromTeamUser},
 		{Key: model.MigrationKeyViewMembersNewPermission, Migration: getViewMembersPermissionMigration},
 		{Key: model.MigrationKeyAddManageGuestsPermissions, Migration: getAddManageGuestsPermissionsMigration},
-		{Key: model.MigrationKeyChannelModerationsPermissions, Migration: channelModerationMig},
+		{Key: model.MigrationKeyChannelModerationsPermissions, Migration: channelModerationPermissionsMigration(getAllTeamSchemes)},
 		{Key: model.MigrationKeyAddUseGroupMentionsPermission, Migration: getAddUseGroupMentionsPermissionMigration},
 		{Key: model.MigrationKeyAddSystemConsolePermissions, Migration: getAddSystemConsolePermissionsMigration},
 		{Key: model.MigrationKeyAddConvertChannelPermissions, Migration: getAddConvertChannelPermissionsMigration},
@@ -1367,7 +1363,15 @@ func (a *App) DoPermissionsMigrations() error {
 
 func (s *Server) doPermissionsMigrations() error {
 	a := New(ServerConnector(s.Channels()))
-	migrations := getPermissionsMigrationEntries(a.channelModerationPermissionsMigration)
+	getAllTeamSchemes := func() []*model.Scheme {
+		var all []*model.Scheme
+		next := a.SchemesIterator(model.SchemeScopeTeam, 100)
+		for batch := next(); len(batch) > 0; batch = next() {
+			all = append(all, batch...)
+		}
+		return all
+	}
+	migrations := getPermissionsMigrationEntries(getAllTeamSchemes)
 
 	roles, err := s.Store().Role().GetAll()
 	if err != nil {

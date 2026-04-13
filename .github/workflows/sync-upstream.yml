@@ -1,0 +1,53 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync from mattermost/mattermost
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/mattermost/mattermost.git
+
+      - name: Fetch upstream master
+        run: git fetch upstream master
+
+      - name: Create sync branch
+        run: |
+          BRANCH="sync/upstream-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git merge upstream/master --no-edit || true
+          echo "branch=${BRANCH}" >> "$GITHUB_ENV"
+
+      - name: Push sync branch
+        run: git push origin "${{ env.branch }}" --force
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "chore: sync upstream mattermost/mattermost $(date +%Y-%m-%d)" \
+            --body "Automated weekly sync from [mattermost/mattermost](https://github.com/mattermost/mattermost) master branch." \
+            --base main \
+            --head "${{ env.branch }}" \
+            --label "upstream-sync" || echo "PR already exists or no changes"

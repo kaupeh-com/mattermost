@@ -1,0 +1,100 @@
+# Dockerfile.kauchat — Multi-stage build for KauChat (Mattermost fork)
+#
+# Builds the Go server and React webapp from source.
+# Produces a minimal runtime image compatible with K8s restricted pod security.
+
+# ── Stage 1: Build webapp ────────────────────────────────────────────────────
+FROM node:24-bookworm-slim AS webapp-builder
+
+WORKDIR /mattermost
+
+# Copy workspace root files for npm workspace resolution
+COPY webapp/package.json webapp/package-lock.json webapp/
+COPY webapp/platform webapp/platform
+COPY webapp/channels webapp/channels
+COPY webapp/playbooks webapp/playbooks
+COPY webapp/boards webapp/boards
+
+WORKDIR /mattermost/webapp
+RUN npm ci --no-audit --no-fund
+RUN npm run build
+
+# ── Stage 2: Build Go server ────────────────────────────────────────────────
+FROM golang:1.25-bookworm AS server-builder
+
+WORKDIR /mattermost
+
+# Copy go module files first for cache
+COPY server/go.mod server/go.sum server/
+WORKDIR /mattermost/server
+RUN go mod download
+
+# Copy server source
+COPY server/ /mattermost/server/
+
+# Build the server binary
+RUN CGO_ENABLED=0 go build \
+    -ldflags "-s -w \
+      -X github.com/mattermost/mattermost/server/v8/model.BuildNumber=kauchat \
+      -X github.com/mattermost/mattermost/server/v8/model.BuildDate=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+      -X github.com/mattermost/mattermost/server/v8/model.BuildHash=$(git rev-parse HEAD 2>/dev/null || echo 'unknown')" \
+    -o /mattermost/bin/mattermost \
+    ./cmd/mattermost
+
+# Build mmctl
+RUN CGO_ENABLED=0 go build \
+    -ldflags "-s -w" \
+    -o /mattermost/bin/mmctl \
+    ./cmd/mmctl
+
+# ── Stage 3: Runtime ────────────────────────────────────────────────────────
+FROM ubuntu:noble-20251013 AS runtime
+
+ARG PUID=2000
+ARG PGID=2000
+
+# Install minimal runtime dependencies
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+      ca-certificates \
+      media-types \
+      mailcap \
+      tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create mattermost user
+RUN groupadd --gid ${PGID} mattermost \
+    && useradd --uid ${PUID} --gid ${PGID} --comment "" --home-dir /mattermost mattermost
+
+# Set up directories
+RUN mkdir -p /mattermost/data /mattermost/logs /mattermost/config \
+    /mattermost/plugins /mattermost/client/plugins \
+    /mattermost/.postgresql \
+    && chmod 700 /mattermost/.postgresql
+
+# Copy server binary
+COPY --from=server-builder /mattermost/bin/mattermost /mattermost/bin/mattermost
+COPY --from=server-builder /mattermost/bin/mmctl /mattermost/bin/mmctl
+
+# Copy webapp static assets
+COPY --from=webapp-builder /mattermost/webapp/channels/dist /mattermost/client
+
+# Copy i18n and templates from server source
+COPY server/i18n /mattermost/i18n
+COPY server/templates /mattermost/templates
+
+# Set ownership
+RUN chown -R mattermost:mattermost /mattermost
+
+ENV PATH="/mattermost/bin:${PATH}"
+ENV MM_INSTALL_TYPE="docker"
+
+USER mattermost
+
+HEALTHCHECK --interval=30s --timeout=10s \
+  CMD ["/mattermost/bin/mmctl", "system", "status", "--local"]
+
+WORKDIR /mattermost
+EXPOSE 8065
+
+CMD ["/mattermost/bin/mattermost"]

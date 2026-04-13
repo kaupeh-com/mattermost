@@ -12,8 +12,8 @@ WORKDIR /mattermost
 COPY webapp/package.json webapp/package-lock.json webapp/
 COPY webapp/platform webapp/platform
 COPY webapp/channels webapp/channels
-COPY webapp/playbooks webapp/playbooks
-COPY webapp/boards webapp/boards
+COPY webapp/patches webapp/patches
+COPY webapp/scripts webapp/scripts
 
 WORKDIR /mattermost/webapp
 RUN npm ci --no-audit --no-fund

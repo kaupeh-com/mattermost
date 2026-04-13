@@ -22,18 +22,22 @@ RUN npm run build
 # ── Stage 2: Build Go server ────────────────────────────────────────────────
 FROM golang:1.25-bookworm AS server-builder
 
-WORKDIR /mattermost
-
-# Copy go module files first for cache
-COPY server/go.mod server/go.sum server/
 WORKDIR /mattermost/server
+
+# Copy go module files for both server and server/public (separate modules)
+COPY server/go.mod server/go.sum ./
+COPY server/public/go.mod server/public/go.sum ./public/
+
+# Set up Go workspace (server depends on local server/public module)
+RUN go work init && go work use . && go work use ./public
+
 RUN go mod download
 
-# Copy server source
-COPY server/ /mattermost/server/
+# Copy full server source (including public/)
+COPY server/ ./
 
 # Build the server binary
-RUN CGO_ENABLED=0 go build \
+RUN go build \
     -ldflags "-s -w \
       -X github.com/mattermost/mattermost/server/v8/model.BuildNumber=kauchat \
       -X github.com/mattermost/mattermost/server/v8/model.BuildDate=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
@@ -42,7 +46,7 @@ RUN CGO_ENABLED=0 go build \
     ./cmd/mattermost
 
 # Build mmctl
-RUN CGO_ENABLED=0 go build \
+RUN go build \
     -ldflags "-s -w" \
     -o /mattermost/bin/mmctl \
     ./cmd/mmctl
@@ -80,8 +84,8 @@ COPY --from=server-builder /mattermost/bin/mmctl /mattermost/bin/mmctl
 COPY --from=webapp-builder /mattermost/webapp/channels/dist /mattermost/client
 
 # Copy i18n and templates from server source
-COPY server/i18n /mattermost/i18n
-COPY server/templates /mattermost/templates
+COPY --from=server-builder /mattermost/server/i18n /mattermost/i18n
+COPY --from=server-builder /mattermost/server/templates /mattermost/templates
 
 # Set ownership
 RUN chown -R mattermost:mattermost /mattermost

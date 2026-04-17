@@ -737,8 +737,13 @@ func (a *App) getSSOProvider(service string) (einterfaces.OAuthProvider, *model.
 		return nil, model.NewAppError("getSSOProvider", "api.user.authorize_oauth_user.unsupported.app_error", nil, "service="+service, http.StatusNotImplemented)
 	}
 	providerType := service
+	// KauChat: only upgrade to OpenID provider if a registered provider exists for it.
+	// This allows GitLab OAuth to work with OIDC scopes (e.g. "openid") without
+	// requiring the Enterprise OpenID provider.
 	if strings.Contains(*sso.Scope, OpenIDScope) {
-		providerType = model.ServiceOpenid
+		if openidProvider := einterfaces.GetOAuthProvider(model.ServiceOpenid); openidProvider != nil {
+			providerType = model.ServiceOpenid
+		}
 	}
 	provider := einterfaces.GetOAuthProvider(providerType)
 	if provider == nil {

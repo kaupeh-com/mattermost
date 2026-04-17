@@ -6,6 +6,8 @@ package app
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -31,8 +33,20 @@ import (
 const (
 	OAuthCookieMaxAgeSeconds = 30 * 60 // 30 minutes
 	CookieOAuth              = "MMOAUTH"
+	CookiePKCEVerifier       = "MMPKCE"
 	OpenIDScope              = "openid"
 )
+
+// KauChat: PKCE support for outbound SSO OAuth flows (RFC 7636).
+// Required by KauID which enforces PKCE for all clients.
+func generatePKCE() (verifier, challenge string) {
+	buf := make([]byte, 32)
+	_, _ = rand.Read(buf)
+	verifier = b64.RawURLEncoding.EncodeToString(buf)
+	h := sha256.Sum256([]byte(verifier))
+	challenge = b64.RawURLEncoding.EncodeToString(h[:])
+	return
+}
 
 func (a *App) CreateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError) {
 	// Public method for plugin API - always generates secrets for backward compatibility
@@ -1016,6 +1030,21 @@ func (a *App) GetAuthorizationCode(rctx request.CTX, w http.ResponseWriter, r *h
 		authURL += "&login_hint=" + utils.URLEncode(loginHint)
 	}
 
+	// KauChat: add PKCE parameters (RFC 7636) for IdPs that require it
+	verifier, challenge := generatePKCE()
+	authURL += "&code_challenge=" + url.QueryEscape(challenge) + "&code_challenge_method=S256"
+
+	pkceCookie := &http.Cookie{
+		Name:     CookiePKCEVerifier,
+		Value:    verifier,
+		Path:     subpath,
+		MaxAge:   OAuthCookieMaxAgeSeconds,
+		Expires:  expiresAt,
+		HttpOnly: true,
+		Secure:   secure,
+	}
+	http.SetCookie(w, pkceCookie)
+
 	return authURL, nil
 }
 
@@ -1087,6 +1116,20 @@ func (a *App) AuthorizeOAuthUser(rctx request.CTX, w http.ResponseWriter, r *htt
 	p.Set("code", code)
 	p.Set("grant_type", model.AccessTokenGrantType)
 	p.Set("redirect_uri", redirectURI)
+
+	// KauChat: include PKCE code_verifier if present
+	if pkceCookie, pkceCookieErr := r.Cookie(CookiePKCEVerifier); pkceCookieErr == nil && pkceCookie.Value != "" {
+		p.Set("code_verifier", pkceCookie.Value)
+		// Clear the PKCE cookie
+		subpath2, _ := utils.GetSubpathFromConfig(a.Config())
+		http.SetCookie(w, &http.Cookie{
+			Name:     CookiePKCEVerifier,
+			Value:    "",
+			Path:     subpath2,
+			MaxAge:   -1,
+			HttpOnly: true,
+		})
+	}
 
 	req, requestErr := http.NewRequest("POST", *sso.TokenEndpoint, strings.NewReader(p.Encode()))
 	if requestErr != nil {
